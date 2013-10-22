@@ -20,6 +20,7 @@ namespace LanguageControl
     [ApiVersion(1, 14)]
     public class LanguageControl : TerrariaPlugin
     {
+        public static LanguageControlConfig Config = new LanguageControlConfig();
         public LanguageControl(Main game)
             : base(game)
         {
@@ -28,30 +29,31 @@ namespace LanguageControl
 
         public override void Initialize()
         {
-            //ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
-            ServerApi.Hooks.ServerConnect.Register(this, OnConnect);
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
             ServerApi.Hooks.ServerJoin.Register(this, OnJoin);
             ServerApi.Hooks.ServerChat.Register(this, OnChat);
         }
 
-        /*void OnInitialize(EventArgs e)
+        void OnInitialize(EventArgs e)
         {
-        }*/
+            GeneralHooks.ReloadEvent += OnReload;
+            LanguageControlConfig.Load();
+        }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                ServerApi.Hooks.ServerConnect.Deregister(this, OnConnect);
                 ServerApi.Hooks.ServerJoin.Deregister(this, OnJoin);
                 ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
+                GeneralHooks.ReloadEvent -= OnReload;
             }
             base.Dispose(disposing);
         }
 
         public override Version Version
         {
-            get { return new Version("0.9.10.20"); }
+            get { return new Version("0.9.10.23"); }
         }
         public override string Name
         {
@@ -66,30 +68,6 @@ namespace LanguageControl
             get { return "Filters language modifications on clients."; }
         }
 
-        private void OnConnect(ConnectEventArgs args)
-        {
-            TSPlayer player = new TSPlayer(args.Who);
-            if (player == null)
-            {
-                args.Handled = true;
-                return;
-            }
-            /*if (!TShock.Utils.ValidString(player.Name))
-            {
-                Log.ConsoleInfo("Caught OnConnect");
-                TShock.Utils.ForceKick(player, "bad nickname!", false);
-                args.Handled = true;
-                return;
-            }
-            if (player.Name.Length < 3)
-            {
-                Log.ConsoleInfo("Caught OnConnect");
-                TShock.Utils.ForceKick(player, "nickname too short.", false);
-                args.Handled = true;
-                return;
-            }*/
-        }
-
         private void OnJoin(JoinEventArgs args)
         {
             TSPlayer player = TShock.Players[args.Who];
@@ -98,16 +76,14 @@ namespace LanguageControl
                 args.Handled = true;
                 return;
             }
-            if (!TShock.Utils.ValidString(player.Name))
+            if (!TShock.Utils.ValidString(player.Name) && Config.FilterNicknames)
             {
-                Log.ConsoleInfo("Caught OnConnect");
                 TShock.Utils.ForceKick(player, "bad nickname!", false);
                 args.Handled = true;
                 return;
             }
-            if (player.Name.Length < 3)
+            if (player.Name.Length < Config.ShortestNickname)
             {
-                Log.ConsoleInfo("Caught OnConnect");
                 TShock.Utils.ForceKick(player, "nickname too short.", false);
                 args.Handled = true;
                 return;
@@ -116,13 +92,18 @@ namespace LanguageControl
 
         private void OnChat(ServerChatEventArgs args)
         {
-            if (!TShock.Utils.ValidString(args.Text))
+            if (!TShock.Utils.ValidString(args.Text) && Config.FilterChat)
             {
                 TSPlayer player = TShock.Players[args.Who];
                 player.SendMessage("Pfui!", Color.Chocolate);
                 args.Handled = true;
                 return;
             }
+        }
+
+        private void OnReload(ReloadEventArgs args)
+        {
+            LanguageControlConfig.Reload(args);
         }
     }
 }
