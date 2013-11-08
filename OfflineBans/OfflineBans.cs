@@ -34,7 +34,7 @@ namespace OfflineBans
 
         public override string Author
         {
-            get { return "Commaster & B4"; }
+            get { return "Commaster & simon311"; }
         }
 
         public override string Description
@@ -82,6 +82,8 @@ namespace OfflineBans
 						string uuid = player.UUID;
 						string playerName = player.Name;
 						TShock.Bans.AddBan(ip, playerName, uuid, reason, false, adminUserName);
+						var players = TShock.Utils.FindPlayer(player.Name);
+						if (players.Count == 1) players[0].Disconnect(string.Format("Banned: {0}", reason));
 						Log.ConsoleInfo(string.Format("{0} has banned {1} for : '{2}'", adminUserName, playerName, reason));
 						string verb = force ? "force-" : "";
 						if (String.IsNullOrWhiteSpace(adminUserName))
