@@ -75,6 +75,7 @@ namespace OfflineBans
 									: "Misbehavior.";
 					bool force = !args.Player.RealPlayer;
 					string adminUserName = args.Player.UserAccountName;
+					adminUserName = String.IsNullOrWhiteSpace(adminUserName) ? args.Player.Name : adminUserName;
 					if (force || !TShock.Groups.GetGroupByName(player.Group).HasPermission(Permissions.immunetoban))
 					{
 						List<string> KnownIps = JsonConvert.DeserializeObject<List<string>>(player.KnownIps);
