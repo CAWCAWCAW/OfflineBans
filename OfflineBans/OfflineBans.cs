@@ -8,7 +8,7 @@ using TShockAPI;
 
 namespace OfflineBans
 {
-    [ApiVersion(1, 15)]
+    [ApiVersion(1, 16)]
     public class OfflineBans : TerrariaPlugin
     {
         public OfflineBans(Main game)
